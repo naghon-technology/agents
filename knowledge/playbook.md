@@ -11,6 +11,15 @@ it short and actionable.
 5. Verify: linter, typecheck, and real tests. Nothing is assumed without checking it.
 6. Close with `/retro`: promote reusable learnings to this shared knowledge.
 
+## Before touching known debt
+- **Verificá la deuda vieja contra el código de hoy antes de reportarla o arreglarla.** Las
+  notas envejecen y un bug ya resuelto cuesta lo mismo de investigar que uno real (en una
+  sesión, 2 de 2 entradas "conocidas" estaban obsoletas).
+- **Medí antes de refactorizar algo delicado.** Si no sabés si el problema pasa diez veces por
+  día o una por mes, no sabés si el riesgo del cambio vale: instrumentá, dejá correr, decidí
+  con el número. Cerrar la deuda con "no vale la pena" es un cierre válido; dejarla sin decidir
+  no lo es.
+
 ## Golden rules
 - **Project independence**: never carry one project's conventions into another without
   verifying. Each repo rules over itself.
