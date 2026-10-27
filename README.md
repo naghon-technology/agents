@@ -19,7 +19,7 @@ cd ~/projects/claude-code/team
 bash install.sh          # or: bash install.sh --dry-run  to preview what it would do
 ```
 
-Restart Claude Code. Verify with `/agents` and `/memory`.
+Restart Claude Code. Verify with `/team` (lists the squad) and `/memory`; on disk, `ls -l ~/.claude/agents` should show symlinks into this folder.
 
 `--dry-run` is a rehearsal: it prints exactly what the installer *would* do (which
 symlinks it would create or prune) **without writing anything**.

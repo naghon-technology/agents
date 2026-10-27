@@ -60,4 +60,4 @@ Rules:
 grep -h '^name:' agents/*.md | sort | uniq -d   # unique names (must print nothing)
 bash install.sh                                 # relink into ~/.claude
 ```
-Restart Claude Code and verify with `/agents`.
+Restart Claude Code and verify with `/team` (or `ls -l ~/.claude/agents`).

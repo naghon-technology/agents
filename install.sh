@@ -81,4 +81,4 @@ echo
 echo "==> Done. Linked: $linked · Pruned: $pruned"
 [ "$DRY_RUN" = 1 ] && exit 0
 echo "    Restart Claude Code so it picks up agents, rules, commands, and skills."
-echo "    Verify with:  /agents   ·   /memory"
+echo "    Verify with:  /team   ·   /memory   ·   ls -l ~/.claude/agents"
