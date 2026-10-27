@@ -7,6 +7,8 @@ new things without a reason.
 - **Web / fullstack**: Next.js (App Router), TypeScript, Prisma + PostgreSQL, Tailwind.
 - **Deploy**: Vercel (web) / Docker (services and workers).
 - **AI / voice**: Retell for voice; Anthropic / OpenAI via AI Gateway for LLMs.
+- **Video / live decks**: HyperFrames (HTML → video, slideshows with presenter mode). External
+  skill pack, installed with `bash install.sh --external`, not vendored in this repo.
 - **Support / chat**: Chatwoot for conversational support.
 - **ML / vision**: Python (workers), RTSP pipelines for video streams.
 

@@ -24,6 +24,11 @@ Restart Claude Code. Verify with `/agents` and `/memory`.
 `--dry-run` is a rehearsal: it prints exactly what the installer *would* do (which
 symlinks it would create or prune) **without writing anything**.
 
+`--external` also installs third-party skill packs via `npx skills` (currently
+`heygen-com/hyperframes`: HTML → video, live slideshows, media). They're managed upstream
+(lock file in `~/.agents/.skill-lock.json`) instead of vendored here; update them with
+`npx skills update -g`. Flags combine: `bash install.sh --external --dry-run`.
+
 The installer is **idempotent**: re-run it whenever you add or remove something. It links
 new files and prunes dangling symlinks for anything you deleted.
 

@@ -5,10 +5,24 @@
 # Usage:
 #   bash install.sh            # install / update
 #   bash install.sh --dry-run  # show what it would do, without touching anything
+#   bash install.sh --external # also install/update third-party skill packs (needs network + npx)
 set -euo pipefail
 
 DRY_RUN=0
-[ "${1:-}" = "--dry-run" ] && DRY_RUN=1
+EXTERNAL=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run)  DRY_RUN=1 ;;
+    --external) EXTERNAL=1 ;;
+    *) echo "Unknown option: $arg" >&2; exit 1 ;;
+  esac
+done
+
+# Third-party skill packs, managed by `npx skills` (lock file: ~/.agents/.skill-lock.json).
+# Not vendored in this repo so they stay updatable from upstream.
+EXTERNAL_SKILLS=(
+  "heygen-com/hyperframes"   # HyperFrames: HTML -> video, slideshows, media
+)
 
 TEAM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
@@ -53,6 +67,15 @@ for sub in agents rules commands skills; do
     done
   fi
 done
+
+if [ "$EXTERNAL" = 1 ]; then
+  echo
+  echo "==> Installing external skill packs (npx skills, global)"
+  for pkg in "${EXTERNAL_SKILLS[@]}"; do
+    run "npx -y skills add \"$pkg\" -g -y"
+    echo "    added   $pkg"
+  done
+fi
 
 echo
 echo "==> Done. Linked: $linked · Pruned: $pruned"
