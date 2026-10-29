@@ -54,7 +54,28 @@ Format for each entry:
 
 ## Frontend / UI
 
-- _(empty — filled via `/retro`)_
+- **[2026-10-28] Un bug visual se REPRODUCE antes de diagnosticarlo** — Context: el cliente
+  reportó "no aplica los colores que le pido, ejemplo: pone todo el fondo rojo". Se leyó como "lo
+  pinta de rojo sin que se lo pidan" y se empezó a arreglar eso. → Qué pasó: al renderizar el menú
+  con la configuración REAL guardada en la base, el fondo era crema con detalles rojos. El usuario
+  había pedido fondo rojo y el sistema no podía dárselo — el bug era el opuesto del que se iba a
+  arreglar. → Qué hacer: con cualquier reporte visual, generar el artefacto con los datos de
+  producción y MIRARLO antes de tocar código. El reporte dice qué molestó, no cuál es la causa; y
+  media hora de arreglo en la dirección equivocada cuesta más que un render. (chefiando)
+
+## Seguridad
+
+- **[2026-10-28] Un hallazgo automático de seguridad se verifica claim por claim** — Context: una
+  revisión automática marcó SSRF en una dependencia de terceros y propuso dos arreglos: resolver
+  el DNS antes de cada hop, y normalizar las IPv4 mapeadas agregando `::ffff:0:0/96` al blocklist.
+  → Qué pasó: el primero era real y grave (un NOMBRE que resuelve a 127.0.0.1 o a 169.254.169.254
+  atravesaba el filtro entero, verificado con `localtest.me` y `nip.io`). El segundo era
+  incorrecto: medido en Node, `BlockList` YA entiende las IPv4 mapeadas, y esa subred habría
+  bloqueado direcciones públicas legítimas como `::ffff:8.8.8.8`. → Qué hacer: reproducir cada
+  afirmación —la vulnerabilidad Y el arreglo propuesto— con un script de cuatro líneas antes de
+  aplicar nada. Un arreglo sugerido y no medido puede romper tráfico legítimo, que es un incidente
+  peor que el que se quería evitar. Y si el código es de terceros con lockfile: el parche se
+  pierde en el próximo update, así que se firma, se fecha y se anota dónde revisarlo. (chefiando)
 
 ## Backend / Data
 
@@ -66,6 +87,18 @@ Format for each entry:
   DÓNDE se llama algo, el test se escribe contra el FUENTE (`readFileSync` del módulo +
   aserciones sobre la presencia y el orden de las llamadas). Feo, y es lo único que ve ese
   error. (chefiando)
+
+- **[2026-10-28] Una cadena nueva se testea desde donde NACE el dato, no desde donde se consume** —
+  Context: se construyó "foto por plato" en el cardápio —matcheo por palabras, miniaturas, collage,
+  reglas de cobertura— con tests de unidad en verde, y no funcionaba para NINGÚN negocio. → Qué
+  pasó: la foto que mandaba el usuario se le pasaba al modelo para que la viera y se descartaba;
+  `saveAsset` sólo se llamaba al GENERAR. El productor del dato no existía, así que la tabla que
+  el feature consulta estaba vacía. Ningún test de unidad puede ver eso: `fotosDelMenu` estaba
+  bien, `fotoPara` estaba bien, y un eslabón que no existe no tiene función que testear. → Qué
+  hacer: ANTES de escribir el consumidor, consultar producción y confirmar que el dato llega de
+  verdad (`select count(*) ... where <la condición que el feature usa>`); si da cero, el feature
+  no existe todavía por más código que tenga. Es el hermano de la lección del CABLEADO: aquélla
+  es "lo llamo desde el lugar equivocado", ésta es "nadie lo produce". (chefiando)
 
 ---
 
