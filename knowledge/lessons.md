@@ -63,6 +63,70 @@ Format for each entry:
   producción y MIRARLO antes de tocar código. El reporte dice qué molestó, no cuál es la causa; y
   media hora de arreglo en la dirección equivocada cuesta más que un render. (chefiando)
 
+## Verificación
+
+- **[2026-11-13] Un chequeo tiene que medir el EFECTO, no la intención — y tiene que poder
+  fallar** — Context: en un solo día aparecieron CUATRO bugs con la misma forma: todo en verde,
+  nada roto, y el usuario viendo otra cosa. (1) Diez personas escribieron por WhatsApp y el bot
+  les contestó las 31 veces; ninguna se entregó, porque la plataforma no mandaba el teléfono del
+  contacto. Durante esa semana el webhook devolvió 200, las colas estaban vacías, el token era
+  válido y SIETE chequeos de salud daban OK — ninguno miraba si lo que escribíamos LLEGABA. (2)
+  Las respuestas se cortaban a la mitad por el tope de tokens y nadie leía `stop_reason`. (3) Un
+  detector de desbordes preguntaba `scrollHeight`, que bajo `overflow:hidden` viene clampeado al
+  lienzo: reportaba "sin desbordes" con el pie 250px afuera. (4) Una guardia verificaba que una
+  palabra ESTUVIERA en el HTML en vez de que el dato hiciera algo. → Qué hacer: para cada chequeo,
+  preguntarse "¿qué entrada lo haría fallar?". Si no hay ninguna, no es un chequeo. Y medir el
+  último eslabón, el que toca al usuario: "lo generé" no es "lo entregué", "devolvió 200" no es
+  "lo procesó", "la palabra está" no es "el dato se usó". Entre el borde del sistema y la persona
+  suele haber un centímetro que nadie mira, y es donde viven los bugs que el cliente reporta y
+  nosotros no podemos reproducir. (chefiando)
+
+- **[2026-11-13] Cuando el resultado de un modelo sale raro, grepear lo que PEDIMOS antes de
+  culpar al modelo** — Context: un usuario reportó como lo más grave del producto que al pedir
+  "cambiá sólo X" la imagen volvía con X, Y y Z cambiados. → Qué pasó: el código editaba la foto
+  ORIGINAL del usuario y no la imagen mejorada que la persona estaba mirando, así que el modelo
+  nunca veía lo que le pedían modificar; y el prompt del cambio incluía igual la receta estética
+  completa ("golden lighting, rich saturated colors, crisp focus, blurred background"), o sea que
+  la Y y la Z se las pedíamos nosotros. Es la tercera vez en el mismo repo: el humo de los videos
+  estaba escrito en nuestro prompt, y los calcos de idioma venían del vocabulario del prompt. →
+  Qué hacer: ante una salida rara de un modelo, leer el prompt COMPLETO y verificar sobre qué
+  entrada corre, antes de tocar parámetros o cambiar de modelo. Y para una herramienta de edición
+  iterativa, la pregunta que lo resuelve casi siempre: ¿está editando la última versión ENTREGADA,
+  o re-generando desde el principio? (chefiando)
+
+
+- **[2026-10-30] Mirar N artefactos con la configuración POR DEFECTO no prueba que el PEDIDO
+  funcione** — Context: al cambiar el motor que dibuja los cardápios se verificó renderizando los
+  15 negocios reales y mirándolos, cuatro rondas, arreglando cada defecto visible. → Qué pasó: al
+  día siguiente el cliente encontró tres bugs en veinte minutos y los tres eran el mismo ciclo:
+  *pido un cambio, el sistema dice que sí, llega lo mismo*. Los quince renders habían salido todos
+  con la configuración por defecto, así que ninguno ejercitaba una sola palanca del feature. →
+  Qué hacer: cuando el valor del feature es "pedís algo y lo ves", la aserción no es que la salida
+  esté bien sino que **CAMBIE** respecto de antes del pedido (`assert.notEqual(despues, antes)`),
+  una por palanca. Es barato, no necesita saber cómo tiene que quedar, y es lo único que ve esta
+  familia entera de bugs. Mirar el artefacto sigue haciendo falta: encuentra otras cosas, no éstas.
+  (chefiando)
+
+- **[2026-10-30] Una regla defensiva que decide NO mostrar un dato se mide antes de dejarla** —
+  Context: con un precio de varios importes ("S/95 entera | S/12 porción") el renderer no mostraba
+  ninguno, con un razonamiento correcto: elegir uno y presentarlo como *el* precio sería mentirle
+  al cliente final. → Qué pasó: medido contra producción, el 24% de los platos tenía varios
+  importes, así que a una cuarta parte del catálogo le quedaba la columna del precio VACÍA — el
+  dato que el usuario había cargado, escondido. El razonamiento seguía siendo correcto y el
+  resultado era malo igual. → Qué hacer: toda regla del tipo "ante la duda no muestro nada" tiene
+  que venir con el número de cuántas veces se dispara; si es frecuente, casi siempre existe una
+  tercera opción que respeta el razonamiento ("a partir de S/12" dice que es el piso, no elige un
+  precio). Un default conservador que descarta datos en silencio es una decisión de producto
+  disfrazada de prudencia técnica. (chefiando)
+
+- **[2026-10-30] Un número que medí ayer no es un número: se vuelve a medir** — Context: se iba a
+  construir sobre un hallazgo propio de la víspera ("4 de 15 negocios tienen platos sin precio").
+  → Qué pasó: al medirlo de nuevo antes de escribir el fix, eran CERO: lo que se había contado
+  como "falta el precio" era en realidad el problema de los varios importes, que se veía igual
+  desde afuera. El arreglo habría quedado apuntando a un problema inexistente. → Qué hacer: una
+  medición vieja se trata como una hipótesis, igual que la deuda conocida; correr la consulta de
+  nuevo cuesta dos minutos y es lo que separa arreglar de parecer que se arregla. (chefiando)
+
 ## Seguridad
 
 - **[2026-10-28] Un hallazgo automático de seguridad se verifica claim por claim** — Context: una
@@ -78,6 +142,17 @@ Format for each entry:
   pierde en el próximo update, así que se firma, se fecha y se anota dónde revisarlo. (chefiando)
 
 ## Backend / Data
+
+- **[2026-10-30] Al cambiar de motor, cada parámetro que el viejo respetaba se vuelve a cablear a
+  mano** — Context: se reemplazó un renderer propio por otro (SVG escrito a mano → Chromium sobre
+  HTML) y se verificó que las piezas salieran bien. → Qué pasó: el motor nuevo armaba su tema con
+  un hash del nombre y NUNCA miraba la paleta que el pipeline venía calculando, así que durante un
+  día ningún usuario pudo cambiarle el color a su pieza — y el sistema contestaba "listo, lo
+  apliqué" sin mentir, porque la herramienta que guardaba el color devolvía OK. La mentira la
+  fabricaba el paso siguiente. → Qué hacer: un cambio de motor no es una migración de salida sino
+  de ENTRADAS: listar todos los parámetros que el motor viejo aceptaba y verificar uno por uno que
+  el nuevo los lee; los que no, no fallan — se ignoran en silencio. Es un caso particular de la
+  lección del CABLEADO y se testea igual, contra el fuente. (chefiando)
 
 - **[2026-10-13] Cuando el bug es el CABLEADO, el test de la función pasa en verde** — Context:
   tres veces en el mismo repo falló algo perfectamente implementado y mal conectado: tools
