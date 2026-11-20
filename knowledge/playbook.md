@@ -27,6 +27,10 @@ it short and actionable.
 - **Security**: secrets always in environment variables, never in git or in `NEXT_PUBLIC_*`.
 - **Readability > cleverness**: clear names, short functions, explicit error handling.
 - **Verification**: prefer programmatic checks (tests, real execution) over "should work".
+- **Código de terceros se parchea en el build, no en el vendor**: un script de reemplazos de texto
+  exactos que falla si el ancla no aparece exactamente una vez, aplicado sobre una copia. El
+  original queda intacto y una actualización que mueve el código rompe el build en vez de
+  compilar algo a medias.
 
 ## How this playbook grows
 When a practice proves useful in more than one project, add it here with `/retro`. If it's
