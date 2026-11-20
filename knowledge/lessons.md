@@ -52,6 +52,27 @@ Format for each entry:
 
 - **[2026-07-24] Orquestación: no pisar trabajo entre agentes (responsabilidad del orquestador)** — Context: se corrieron agentes en paralelo sobre el MISMO working tree y un `git add -A` de un commit barrió cambios sin commitear de otro agente hacia el commit equivocado. → Qué hacer: la coordinación es del orquestador, NUNCA del usuario. Aislar cada agente que ESCRIBE en su propio worktree/rama; nunca `git add -A` si puede haber trabajo ajeno en curso (agregar solo los archivos propios, explícitos); `git status` antes de cada commit para no llevarse lo que no es tuyo. Si algo sale mal en la coordinación de subagentes, es problema del que orquesta, no del usuario. (chefiando)
 
+- **[2026-11-20] Un ejemplo en el prompt de un agente es una plantilla: su defecto se copia en
+  todo** — Context: al agente que diseña niveles le di una "receta" de pasaje secreto (un cubículo
+  de 2 baldosas con la poción). → Qué pasó: las 5 pociones de vida de 11 niveles quedaron en ese
+  cubículo, al lado del camino, y el usuario lo vio como un defecto del juego, no de un nivel. →
+  Qué hacer: revisar cada ejemplo del prompt como si fuera a aparecer N veces, porque aparece. Una
+  regla de calidad se expresa además como verificación medible (acá: "el cuarto de la poción no
+  está en el camino más rápido", medido con el juez), no sólo como ejemplo. (prince)
+
+- **[2026-11-20] Imitar un corpus de referencia: la regla sale de los datos, no del último
+  reclamo** — Context: generar niveles al estilo de un juego original. → Qué pasó: arreglé "la
+  puerta se ve cortada" con una regla inventada y débil, y volvió a pasar; contar en los 14 niveles
+  originales mostraba que 0 de 28 puertas están en la fila de arriba. → Qué hacer: ante una queja
+  sobre una instancia, primero contar en la referencia qué hace siempre o nunca, y convertir eso en
+  la regla. Un "nunca" sobre N grande vale más que cualquier criterio propio. (prince)
+
+- **[2026-11-20] Medir el costo real de UNA corrida antes de prender algo que se repone solo** —
+  Context: botón "nivel al azar" con un nivel siempre pre-diseñado en reserva. → Qué pasó: estimé
+  US$ 0,50-1; la primera corrida midió US$ 2,28 y 15 min, y el usuario apagó la función. → Qué
+  hacer: con reservas, pregeneración o crons, una corrida real primero y el costo medido a la
+  vista antes de dejarlo automático. (prince)
+
 ## Frontend / UI
 
 - **[2026-10-28] Un bug visual se REPRODUCE antes de diagnosticarlo** — Context: el cliente
@@ -79,7 +100,9 @@ Format for each entry:
   último eslabón, el que toca al usuario: "lo generé" no es "lo entregué", "devolvió 200" no es
   "lo procesó", "la palabra está" no es "el dato se usó". Entre el borde del sistema y la persona
   suele haber un centímetro que nadie mira, y es donde viven los bugs que el cliente reporta y
-  nosotros no podemos reproducir. (chefiando)
+  nosotros no podemos reproducir. (chefiando) — (5) Un build cuyo chequeo de éxito era "existe
+  el `.wasm`" decía "Listo" con el artefacto VIEJO si la compilación fallaba: borrar la salida
+  antes de compilar, así el chequeo puede fallar. (prince)
 
 - **[2026-11-13] Cuando el resultado de un modelo sale raro, grepear lo que PEDIMOS antes de
   culpar al modelo** — Context: un usuario reportó como lo más grave del producto que al pedir

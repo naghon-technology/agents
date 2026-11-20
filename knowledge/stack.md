@@ -21,5 +21,7 @@ outweighs the maintenance cost. Document the decision.
 - **aipower-retail / retaileye** — computer vision for retail (frontend + RTSP demo + Python worker).
 - **chefiando** — support POC with Chatwoot (agent-bot + backoffice) for hospitality.
 - **naghon** — content / landing work.
+- **prince** — Prince of Persia (SDLPoP → WebAssembly) con un "camino" de niveles infinitos que
+  diseña un agente Claude y verifica el motor real como juez.
 
 _(Update this list as projects change.)_
